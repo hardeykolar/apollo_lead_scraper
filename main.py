@@ -85,14 +85,7 @@ class WebsiteScraper:
         names = []
         titles = []
         companies = []
-        contact_locations = []
-        employees = []
-        industries = []
-        keywords = []
-
-        profile_urls = []
-        company_urls = []
-
+        
         full_emails_data = []
         full_phone_numbers = []
         full_profile_url = []
@@ -100,18 +93,11 @@ class WebsiteScraper:
         counter = 0
 
         while True:
-            emails_data = []
-            phone_numbers = []
+            
             WebDriverWait(self.driver,60).until(EC.visibility_of_all_elements_located((By.XPATH,"//div[contains(@id,'table-row')]")))
 
             rows = self.driver.find_elements(By.XPATH,"//div[contains(@id,'table-row')]")
-            # //div[contains(@id,'table-row')]
-            #new_rows = self.driver.find_elements(By.XPATH,"//div[contains(@id,'table-row')]")
-            #for new_row in new_rows:
-            #    name = new
-
-
-
+            
             
             for row in rows:
                 
@@ -129,34 +115,13 @@ class WebsiteScraper:
                 company_name = row.find_elements(By.XPATH,"./div[3]//a")[1].get_attribute('textContent')
                 companies.append(company_name)
 
-                #full_phone_numbers.append(row.find_element(By.XPATH,"./div[5]").get_attribute('textContent'))
-                #company_urls.append([item.get_attribute('href') for item in row.find_elements(By.TAG_NAME,'td')[2].find_elements(By.TAG_NAME,'a')])
-
-                #profile_urls.append([item.get_attribute('href') for item in row.find_elements(By.TAG_NAME,'td')[0].find_elements(By.TAG_NAME,'a')])
-
-                #names.append([val.get_attribute('textContent') for val in row.find_elements(By.TAG_NAME,'td')][0])
-
-                #titles.append([val.get_attribute('textContent') for val in row.find_elements(By.TAG_NAME,'td')][1])
-
-                #companies.append([val.get_attribute('textContent') for val in row.find_elements(By.TAG_NAME,'td')][2])
-
-                #contact_locations.append([val.get_attribute('textContent') for val in row.find_elements(By.TAG_NAME,'td')][4])
-
-                #employees.append([val.get_attribute('textContent') for val in row.find_elements(By.TAG_NAME,'td')][5])
-
-                #industries.append([val.get_attribute('textContent') for val in row.find_elements(By.TAG_NAME,'td')][7])
-
-                #keywords.append([val.get_attribute('textContent') for val in row.find_elements(By.TAG_NAME,'td')][8])
-
-    
+                
+            
             for i in range(len(rows)):
                 try:
                     WebDriverWait(self.driver,10).until(EC.element_to_be_clickable((By.XPATH,"//span[contains(text(),'Access email')]/ancestor::button")))
                     rows[i].find_element(By.XPATH,"//span[contains(text(),'Access email')]/ancestor::button").click()
                     WebDriverWait(self.driver,60).until(EC.presence_of_element_located((By.XPATH,"//span[contains(text(),'@citadel.com')]")))
-                    #email_tags = rows[i].find_elements(By.XPATH,"//div[contains(@id,'id-')]//span[contains(text(),'@')]")
-                    #emails = [tag.text for tag in email_tags]
-                    #emails = row[i].find_element(By.XPATH,"//span[contains(text(),'@citadel.com')]").get_attribute("textContent")
                     
                 except:
                     pass
@@ -166,10 +131,7 @@ class WebsiteScraper:
             for email_tag in email_tags:
                 full_emails_data.append(email_tag.get_attribute("textContent"))
 
-            #full_emails_data.append(emails)
-
-            #phones_text = [item.text for item in self.driver.find_elements(By.XPATH,'//table//tr')][1:]
-        
+            
             for row in rows:
 
                 try:
@@ -178,18 +140,14 @@ class WebsiteScraper:
                 except:
                     full_phone_numbers.append('NA')
 
-            #full_emails_data.extend(emails_data)
-            #full_phone_numbers.extend(phone_numbers)
-
+            
             counter += 1
             if counter == 2:
                 break
             self.driver.find_element(By.CSS_SELECTOR,"button[aria-label='Next']").click()
             WebDriverWait(self.driver,20).until(EC.presence_of_all_elements_located((By.XPATH,"//div[contains(@id,'table-row')]")))
     
-        #full_profile_url = ['|'.join(val) for val in profile_urls]
-        #full_company_urls = ['|'.join(item) for item in company_urls]
-
+        
 
         lead_data = pd.DataFrame({'Names':names,'Titles':titles,'Profile_urls':full_profile_url,
              'Comapny_urls':full_company_urls,'Company_names':companies,
@@ -198,7 +156,6 @@ class WebsiteScraper:
         
         lead_data.to_csv("apollo_lead.csv",index=False)
 
-        # Add your scraping logic here using Selenium commands
 
     def send_email(self,subject,body):
 
@@ -231,7 +188,7 @@ class WebsiteScraper:
     def close_browser(self):
         self.driver.quit()
 
-# Example usage
+# entry point
 if __name__ == "__main__":
 
     scraper = WebsiteScraper("https://app.apollo.io/#/login")
@@ -248,4 +205,3 @@ if __name__ == "__main__":
 
 
 
-#https://app.apollo.io/#/people?sortAscending=false&page=1&organizationIds[]=54a22f23746869331840e813
