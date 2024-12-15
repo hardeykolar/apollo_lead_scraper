@@ -1,7 +1,6 @@
 from email.mime.application import MIMEApplication
 import json
 import random
-import re
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -38,7 +37,13 @@ class WebsiteScraper:
             self.recipient_email = config["email_to"]
 
         options = webdriver.ChromeOptions()
+
+        options.add_argument("user-agent=Mozilla/5.0 (test-user-agent NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36")
+
+
+
         options.add_argument("--disable-blink-features=AutomationControlled")
+        
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option("useAutomationExtension", False)
         prefs = {
@@ -48,8 +53,8 @@ class WebsiteScraper:
         options.add_experimental_option("prefs", prefs)
 
         #options.add_argument("--disable-gpu") 
-        options.add_argument("--disable-extensions") 
-        options.add_argument("--disable-infobars") 
+        #options.add_argument("--disable-extensions") 
+        #options.add_argument("--disable-infobars") 
         options.add_argument("--start-maximized") 
         options.add_argument("--disable-notifications")  
 
@@ -58,7 +63,6 @@ class WebsiteScraper:
         #options.add_argument("--disable-dev-shm-usage")
 
         self.driver = webdriver.Chrome(options=options)
-        #self.driver.maximize_window()
 
     def login_to_apollo(self):
         self.driver.get(self.url)
@@ -90,6 +94,7 @@ class WebsiteScraper:
         full_phone_numbers = []
         full_profile_url = []
         full_company_urls = []
+        full_locations = []
         counter = 0
 
         while True:
@@ -106,7 +111,7 @@ class WebsiteScraper:
                 names.append(profile_name)
                 profile_url = row.find_element(By.XPATH,"./div[1]//a").get_attribute('href')
                 full_profile_url.append(profile_url)
-                job_title = row.find_element(By.XPATH,"./div[2]/span/span").get_attribute('textContent')
+                job_title = row.find_element(By.XPATH,"./div[2]//span//span").get_attribute('textContent')
                 titles.append(job_title)
 
 
@@ -119,14 +124,14 @@ class WebsiteScraper:
             
             for i in range(len(rows)):
                 try:
-                    WebDriverWait(self.driver,10).until(EC.element_to_be_clickable((By.XPATH,"//span[contains(text(),'Access email')]/ancestor::button")))
+                    WebDriverWait(self.driver,20).until(EC.element_to_be_clickable((By.XPATH,"//span[contains(text(),'Access email')]/ancestor::button")))
                     rows[i].find_element(By.XPATH,"//span[contains(text(),'Access email')]/ancestor::button").click()
-                    WebDriverWait(self.driver,60).until(EC.presence_of_element_located((By.XPATH,"//span[contains(text(),'@citadel.com')]")))
+                    #WebDriverWait(self.driver,60).until(EC.presence_of_element_located((By.XPATH,"//span[contains(text(),'@citadel.com')]")))
                     
                 except:
                     pass
-                self.driver.find_element(By.TAG_NAME,'body').send_keys(Keys.ESCAPE)
-                time.sleep(random.randint(2,5))
+                #self.driver.find_element(By.TAG_NAME,'body').send_keys(Keys.ESCAPE)
+                time.sleep(random.randint(1,3))
             email_tags = self.driver.find_elements(By.XPATH,"//div[contains(@id,'table-row')]/div[4]//span[contains(text(),'@')]")
             for email_tag in email_tags:
                 full_emails_data.append(email_tag.get_attribute("textContent"))
@@ -142,7 +147,7 @@ class WebsiteScraper:
 
             
             counter += 1
-            if counter == 2:
+            if counter >= 20 :
                 break
             self.driver.find_element(By.CSS_SELECTOR,"button[aria-label='Next']").click()
             WebDriverWait(self.driver,20).until(EC.presence_of_all_elements_located((By.XPATH,"//div[contains(@id,'table-row')]")))
